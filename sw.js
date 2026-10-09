@@ -2,7 +2,7 @@
 // screens open without a connection. It only handles this site's own files,
 // always trying the network first so updates show up right away. Firebase,
 // map tiles and other sites are never cached here.
-const CACHE = 'wpb-rides-v1';
+const CACHE = 'wpb-rides-v2';
 const SHELL = ['./', './index.html', './styles.css', './app.js', './config.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', event => {

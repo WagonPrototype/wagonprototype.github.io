@@ -12,9 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Familjen+Grotesk:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="preconnect" href="https://maps.googleapis.com">
 <link rel="stylesheet" href="styles.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script type="module" src="app.js"></script>
 </head>
 <body>
@@ -37,6 +36,7 @@
     </div>
     <button type="button" class="map-btn" id="recenter">Recenter</button>
   </div>
+  <div class="map-key" id="map-key" hidden></div>
 
   <section id="screen-home" class="screen">
     <div class="intro">
@@ -61,12 +61,26 @@
   <section id="screen-rider" class="screen" hidden>
     <div class="card" id="rider-form">
       <div class="field"><label for="r-name">Your name</label><input id="r-name" maxlength="40" autocomplete="given-name" placeholder="e.g. Jorge"></div>
-      <div class="route">
-        <span class="dot a" aria-hidden="true">A</span>
-        <div class="field"><label for="r-pickup">Pickup</label><select id="r-pickup"></select></div>
+      <div class="addr-pair">
+        <div class="addr-col">
+          <div class="addr" id="addr-pickup">
+            <label for="r-pickup-in">Pickup</label>
+            <div class="addr-box">
+              <span class="dot a" aria-hidden="true">A</span>
+              <input id="r-pickup-in" type="text" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search an address or place" role="combobox" aria-expanded="false" aria-controls="r-pickup-sugg" aria-autocomplete="list">
+            </div>
+            <ul class="sugg" id="r-pickup-sugg" role="listbox" aria-label="Pickup suggestions" hidden></ul>
+          </div>
+          <div class="addr" id="addr-dropoff">
+            <label for="r-dropoff-in">Destination</label>
+            <div class="addr-box">
+              <span class="dot b" aria-hidden="true">B</span>
+              <input id="r-dropoff-in" type="text" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Where to?" role="combobox" aria-expanded="false" aria-controls="r-dropoff-sugg" aria-autocomplete="list">
+            </div>
+            <ul class="sugg" id="r-dropoff-sugg" role="listbox" aria-label="Destination suggestions" hidden></ul>
+          </div>
+        </div>
         <button type="button" class="swap" id="r-swap" aria-label="Swap pickup and destination">⇅</button>
-        <span class="dot b" aria-hidden="true">B</span>
-        <div class="field"><label for="r-dropoff">Destination</label><select id="r-dropoff"></select></div>
       </div>
       <div class="hint stack" id="r-hint"></div>
       <div class="fare" id="r-fare"></div>

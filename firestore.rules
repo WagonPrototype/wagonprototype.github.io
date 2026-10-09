@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // Each driver's profile and live position. Anyone using the app
+    // can see who is online; only you can edit your own entry.
+    match /drivers/{driverId} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == driverId;
+    }
+
+    match /rides/{rideId} {
+      // Open requests are visible to all drivers. Otherwise only the
+      // rider and the assigned driver can see a ride.
+      allow read: if signedIn() && (
+        resource.data.status == 'requested'
+        || resource.data.riderUid == request.auth.uid
+        || resource.data.driverUid == request.auth.uid
+      );
+
+      // Riders create their own requests.
+      allow create: if signedIn()
+        && request.resource.data.riderUid == request.auth.uid
+        && request.resource.data.status == 'requested'
+        && request.resource.data.driverUid == null;
+
+      allow update: if signedIn() && (
+        // The rider can cancel or rate their own ride.
+        (resource.data.riderUid == request.auth.uid
+          && changedKeys().hasOnly(['status', 'cancelledAt', 'cancelledBy', 'rating'])
+          && request.resource.data.status in ['cancelled', resource.data.status])
+        // Any driver can accept an open request for themselves.
+        || (resource.data.status == 'requested'
+          && request.resource.data.status == 'accepted'
+          && request.resource.data.driverUid == request.auth.uid
+          && request.resource.data.riderUid == resource.data.riderUid
+          && request.resource.data.fare == resource.data.fare)
+        // The assigned driver moves the ride along, shares location, or releases it.
+        || (resource.data.driverUid == request.auth.uid
+          && request.resource.data.riderUid == resource.data.riderUid
+          && request.resource.data.fare == resource.data.fare
+          && request.resource.data.status in ['requested', 'accepted', 'arrived', 'in_progress', 'completed'])
+      );
+
+      allow delete: if false;
+    }
+  }
+}

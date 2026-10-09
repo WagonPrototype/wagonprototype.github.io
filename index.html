@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>WPB Rides</title>
+<meta name="description" content="Prototype rideshare app for West Palm Beach with live GPS.">
+<meta name="theme-color" content="#0A6670">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Familjen+Grotesk:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="styles.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <button class="brand" id="brand" type="button">WPB Rides <small>Prototype</small></button>
+    <span class="pill" id="conn-pill" data-mode="connecting"><i></i><span>Connecting</span></span>
+  </header>
+  <nav class="seg" aria-label="Choose a side">
+    <button type="button" data-go="rider" aria-pressed="false">Ride</button>
+    <button type="button" data-go="driver" aria-pressed="false">Drive</button>
+  </nav>
+  <div class="notice" id="notice" role="status" hidden></div>
+
+  <div class="map-wrap">
+    <div id="map" aria-label="Map"></div>
+    <div class="map-hint" id="map-hint" hidden>
+      <span id="map-hint-text"></span>
+      <button type="button" class="btn sm ghost" id="map-hint-cancel">Cancel</button>
+    </div>
+    <button type="button" class="map-btn" id="recenter">Recenter</button>
+  </div>
+
+  <section id="screen-home" class="screen">
+    <div class="intro">
+      <h1>Rides across West Palm Beach, with real GPS</h1>
+      <p>One person requests a ride. The other accepts it and drives. The rider watches the car move on the map, and both phones follow the trip to the receipt.</p>
+    </div>
+    <div class="choices">
+      <button class="choice" id="go-ride" type="button"><span class="choice-k">Ride</span><span class="choice-d">Use your location, see the price, request a car</span></button>
+      <button class="choice" id="go-drive" type="button"><span class="choice-k">Drive</span><span class="choice-d">Go online, accept requests, share your location</span></button>
+    </div>
+    <div class="card how">
+      <h3>Testing with someone else</h3>
+      <ol>
+        <li><span>Both of you open this app on your phones.</span></li>
+        <li><span>Allow location when your phone asks.</span></li>
+        <li><span>One taps <b>Ride</b>, the other taps <b>Drive</b>.</span></li>
+      </ol>
+      <p class="hint">Testing at home, not driving? The driver can turn on <b>Test drive</b> to move the car on the map automatically.</p>
+    </div>
+  </section>
+
+  <section id="screen-rider" class="screen" hidden>
+    <div class="card" id="rider-form">
+      <div class="field"><label for="r-name">Your name</label><input id="r-name" maxlength="40" autocomplete="given-name" placeholder="e.g. Jorge"></div>
+      <div class="route">
+        <span class="dot a" aria-hidden="true">A</span>
+        <div class="field"><label for="r-pickup">Pickup</label><select id="r-pickup"></select></div>
+        <button type="button" class="swap" id="r-swap" aria-label="Swap pickup and destination">⇅</button>
+        <span class="dot b" aria-hidden="true">B</span>
+        <div class="field"><label for="r-dropoff">Destination</label><select id="r-dropoff"></select></div>
+      </div>
+      <div class="hint stack" id="r-hint"></div>
+      <div class="fare" id="r-fare"></div>
+      <button class="btn primary" id="r-request" type="button">Request ride</button>
+      <p class="hint" id="r-drivers"></p>
+    </div>
+    <div class="card" id="rider-trip" hidden></div>
+  </section>
+
+  <section id="screen-driver" class="screen" hidden>
+    <div class="card" id="driver-setup">
+      <h2>Your driver profile</h2>
+      <div class="photo-row">
+        <div class="av lg" id="d-av"></div>
+        <div>
+          <label class="btn ghost sm" for="d-photo">Add a photo</label>
+          <input type="file" id="d-photo" accept="image/*" class="vh">
+          <button type="button" class="linkbtn danger" id="d-photo-rm" hidden>Remove photo</button>
+          <span class="hint">Riders see your photo and plate before they get in.</span>
+        </div>
+      </div>
+      <div class="field"><label for="d-name">Name riders see</label><input id="d-name" maxlength="40" placeholder="e.g. Luis"></div>
+      <div class="grid2">
+        <div class="field"><label for="d-car">Car</label><input id="d-car" maxlength="40" placeholder="Gray Honda Civic"></div>
+        <div class="field"><label for="d-plate">Plate</label><input id="d-plate" maxlength="8" autocapitalize="characters" placeholder="ABC D12"></div>
+      </div>
+      <p class="err" id="d-err" hidden></p>
+      <button class="btn primary" id="d-online" type="button">Go online</button>
+      <p class="hint">Going online shares your location with riders while the app is open. In the real service, drivers pass a background check first.</p>
+    </div>
+
+    <div class="card" id="driver-online" hidden>
+      <div id="d-card"></div>
+      <div class="loc-line" id="d-loc"><span class="loc-dot" aria-hidden="true"></span><span id="d-loc-text"></span></div>
+      <div class="btn-row-h">
+        <button type="button" class="btn ghost sm" id="d-spot">Set my spot on the map</button>
+        <button type="button" class="btn ghost sm" id="d-retry" hidden>Use my GPS</button>
+      </div>
+      <button type="button" class="btn ghost" id="d-offline">Go offline</button>
+    </div>
+
+    <div class="card" id="driver-trip" hidden></div>
+
+    <label class="switch-row" id="d-test-row" hidden>
+      <input type="checkbox" id="d-test" role="switch">
+      <span class="sw" aria-hidden="true"></span>
+      <span><b>Test drive</b><small>Moves your car on the map toward the pickup and destination, about 60 mph. For testing without driving.</small></span>
+    </label>
+
+    <div class="reqs" id="driver-requests"></div>
+  </section>
+
+  <p class="foot">Prototype only. No real payments. Your location is shared only while the app is open: a driver's position with their rider, and a rider's pickup spot with drivers. <a href="privacy.html">Privacy</a></p>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

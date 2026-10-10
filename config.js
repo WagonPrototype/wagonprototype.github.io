@@ -15,7 +15,7 @@ export const firebaseConfig = {
 };
 
 // Google Maps Platform key for the map, address search and road routes.
-export const MAPS_API_KEY = '';
+export const MAPS_API_KEY = 'AIzaSyCkHFyAEGCce9Zqfu2ZY-GWB3NYIp4uzI8';
 
 // Map style ID. DEMO_MAP_ID is Google's test ID; create a real Map ID in
 // Google Cloud (Map Management) before launch.
